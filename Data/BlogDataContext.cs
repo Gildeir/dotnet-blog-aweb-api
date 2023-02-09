@@ -15,7 +15,7 @@ namespace BlogWebApi.Data
         // public DbSet<UserRole> UserRoles { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=Blog;User ID=sa;Password=SaaS2406@;TrustServerCertificate=True;");
+        => optionsBuilder.UseSqlServer("Server=localhost,1433;Database=BlogWebApi;User ID=sa;Password=SaaS2406@;TrustServerCertificate=True;");
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
