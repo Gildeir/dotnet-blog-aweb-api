@@ -1,4 +1,5 @@
 ﻿using BlogWebApi.Data;
+using BlogWebApi.Extensions;
 using BlogWebApi.Models;
 using BlogWebApi.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -20,13 +21,16 @@ namespace BlogWebApi.Controllers
             try
             {
                 var categories = await context.Categories.ToListAsync();
-
-                return Ok(categories);
+                
+                 var result = new ResultViewModel<List<Category>>(categories);
+                
+                return Ok(result);
             
     }
             catch (Exception e)
             {
-                return StatusCode(500, $"Falha interna no servidor - {e.Message}");
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                return StatusCode(500, result);
             }
         }
 
@@ -40,13 +44,17 @@ namespace BlogWebApi.Controllers
             try
             {
                 var category = await context.Categories.FirstOrDefaultAsync(x => x.Id == id);
-                if (category is null) return NotFound();
+                
+                var result = new ResultViewModel<Category>(category);
+               
+                if (category is null) return NotFound(new ResultViewModel<List<Category>>($"Nothing to show :("));
 
-                return Ok(category);
+                return Ok(result);
             }
             catch (Exception e)
             {
-                return StatusCode(500, $"Falha interna no servidor - {e.Message}");
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                return StatusCode(500, result);
             }
         }
 
@@ -59,6 +67,12 @@ namespace BlogWebApi.Controllers
         {
             try
             {
+
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(new ResultViewModel<Category>(ModelState.GetErros()));
+                }
+
                 var category = new Category
                 {
                     Name = viewModel.Name,
@@ -68,16 +82,18 @@ namespace BlogWebApi.Controllers
                 await context.Categories.AddAsync(category);
                 await context.SaveChangesAsync();
 
-                return Created($"categories/{category.Name}", viewModel);
+                return Created($"categories/{category.Name}", new ResultViewModel<Category>(category));
             }
             catch (DbUpdateException ex)
-            { 
-                return StatusCode(500, $"Não foi possível incluir a categoria{ex.Message}");
+            {
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                return StatusCode(500, result);
             }
             
             catch (Exception e)
             {
-                return StatusCode(500, "Falha interna no servidor");
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                return StatusCode(500, result);
             }
         }
 
@@ -85,7 +101,7 @@ namespace BlogWebApi.Controllers
         public async Task<IActionResult> PutAsync
             (
                 [FromRoute] int id,
-                [FromBody] Category categoryModel,
+                [FromBody] EditorCategoryViewModel viewModel,
                 [FromServices] BlogDataContext context
             )
         {
@@ -97,18 +113,19 @@ namespace BlogWebApi.Controllers
 
                 if (category is null) return NotFound();
 
-                category.Name = categoryModel.Name;
-                category.Slug = categoryModel.Slug;
+                category.Name = viewModel.Name;
+                category.Slug = viewModel.Slug;
 
                 context.Categories.Update(category);
 
                 await context.SaveChangesAsync();
 
-                return Ok(categoryModel);
+                return Ok(category);
             }
             catch (Exception e)
             {
-                return StatusCode(500, "Falha interna no servidor");
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                return StatusCode(500, result);
             }
         }
 
@@ -133,12 +150,14 @@ namespace BlogWebApi.Controllers
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, $"Não foi possível excluir a categoria{ex.Message}");
+                var result = new ResultViewModel<List<Category>>($"Não foi possível excluir categoria - {ex.Message}");
+                return StatusCode(500, result);
             }
 
             catch (Exception e)
             {
-                return StatusCode(500, "Falha interna no servidor");
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                return StatusCode(500, result);
             }
         }
     }
