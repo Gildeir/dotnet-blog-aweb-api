@@ -86,7 +86,7 @@ namespace BlogWebApi.Controllers
             }
             catch (DbUpdateException ex)
             {
-                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {e.Message}");
+                var result = new ResultViewModel<List<Category>>($"Falha interna no servidor - {ex.Message}");
                 return StatusCode(500, result);
             }
             
